@@ -54,7 +54,7 @@ this.top=top;
 this.height = height*10;
 
 if(top){this.y = this.height;}
-else{this.y = 490-this.height;}
+else{this.y = screenHeight-10-this.height;}
 
 this.width = 50;
 
@@ -99,6 +99,29 @@ init = function(){
 
 	canvas = document.getElementById('canvas');
 	ctx = canvas.getContext('2d');
+
+	window.addEventListener('resize', resizeCanvas, false); //listen for window resize
+	function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                screenWidth = window.innerWidth;
+                screenHeight  =window.innerHeight;
+
+                ctx.width = window.innerWidth;
+
+                ctx.height = window.innerHeight
+
+
+              
+            }
+
+    resizeCanvas();
+    ctx = canvas.getContext('2d');
+
+    console.log(canvas.width + ',' + canvas.height);
+
+
 	score=0;
 	loc=0;//last visited pipe
 	camera = new Camera();
@@ -143,41 +166,40 @@ init = function(){
         	player.x=30;
         	player.y=100;
         	player.yVel=-5;
+        	camera.x=0;
 
         	
         }
         else if (e.keyCode==82){ //r
+        	
+        	resetGame();
         	//reset all game variables
-        	gameStart=true;
-        	gameEnd=false;
-        	loc=0;
-        	score=0;
-        	camera.x=0;
-        	player.x=30;
-        	player.y=100;
-        	player.yVel=-5;
-
-        	bottomObstacles=[];
-			topObstacles=[];
-
-			bottomObstacles.push( new Obstacle(8,350));
-	
-			for(var i =1 ; i<10; i++){
-				stack = Math.floor(Math.random() * 20) + 6;
-				x= Math.floor(Math.random() * 120) + 120;
-				x += bottomObstacles[i-1].x;
-
-		
-				topStack = Math.floor(Math.random() * (50-stack-13)) +3;
-
-				bottomObstacles.push( new Obstacle(stack,x,false));
-				topObstacles.push( new Obstacle(topStack,x,true));
-
-			}
-			background = [0,500];
+        	
         	
         }
        },false);
+
+	canvas.addEventListener('touchstart', function(e) {
+			if(!gameStart){
+				gameStart=true;
+        		player.x=30;
+        		player.y=100;
+        		player.yVel=-5;
+        		camera.x=0;
+
+
+			}
+
+			else if(gameStart && !gameEnd){
+				player.jump();
+
+			}
+
+			else if( gameStart && gameEnd){
+				resetGame();
+
+			}
+		 },false);
 
 	bg = new Image();
 	bg.src = ('images/bg.jpg');
@@ -192,7 +214,7 @@ init = function(){
 	middle = new Image();
 	middle.src = ('images/middle.png');
 	
-	background = [0,500];
+	background = [0,screenHeight];
 	smallClouds=[ 0, 100, 200, 300, 400];
 	middleClouds=[ 0, 150, 300, 450];
 	largeClouds=[ 200,400];
@@ -260,13 +282,13 @@ update = function(){
 }
 
 drawEndGame = function(){
-	ctx.clearRect(0,0,500,500);
+	ctx.clearRect(0,0,screenWidth,screenHeight);
 }
 
 drawWelcome = function(){
-	ctx.clearRect(0,0,500,500);
+	ctx.clearRect(0,0,screenHeight,screenHeight);
 
-	ctx.drawImage(bg,0,0,500,500);
+	ctx.drawImage(bg,0,0,screenHeight,screenHeight);
 
 	for(var i=0;i<smallClouds.length;i++){
 	 	smallClouds[i] -= +1;
@@ -305,11 +327,14 @@ drawWelcome = function(){
 		ctx.drawImage(cloud,largeClouds[i],45,60,60);
 	}
 
+	var tIndent = screenWidth*.1;
+
+
 	ctx.font= "80px 'Indie Flower' red";
-	ctx.fillText('Welcome!',100,200);
+	ctx.fillText('Welcome!',tIndent,200);
 
 	ctx.font= "40px 'Indie Flower' red";
-	ctx.fillText('Press "S" to start',100,250);
+	ctx.fillText('Press "S" to start',tIndent,250);
 }
 
 
@@ -321,7 +346,7 @@ draw = function(){
 
 	
 
-	ctx.clearRect(-camera.x,0,500,500);
+	ctx.clearRect(-camera.x,0,screenWidth,screenHeight);
 
 	
 	//ctx.drawImage(bg,500*loop,0,500,500);
@@ -337,7 +362,7 @@ draw = function(){
 				
 
 			}
-		ctx.drawImage(bg,background[i],0,500,500);
+		ctx.drawImage(bg,background[i],0,screenHeight,screenHeight);
 	}
 	
 
@@ -387,10 +412,10 @@ draw = function(){
 	ctx.drawImage(player.img,player.x,player.y,player.width,player.height); // draw character
 
 	for(var i =0;i<bottomObstacles.length;i++){
-		ctx.drawImage(topPiece,bottomObstacles[i].x,490-bottomObstacles[i].height,80,20);
+		ctx.drawImage(topPiece,bottomObstacles[i].x,screenHeight-10-bottomObstacles[i].height,80,20);
 			
 			//console.log(500-obstacles[0].stack*10);
-			for( var h=490;h>500-bottomObstacles[i].stack*10; h -= 10){
+			for( var h=(screenHeight-10);h>screenHeight-bottomObstacles[i].stack*10; h -= 10){
 				ctx.drawImage(middle,bottomObstacles[i].x,h);
 				//console.log('in for');
 			}
@@ -411,29 +436,59 @@ draw = function(){
 	//ctx.fillText('camera x' + camera.x,-camera.x+50,60);
 
 	ctx.font= "40px 'Indie Flower' red";
-	ctx.fillText('Score: ' + score,-camera.x+350,40);
+	ctx.fillText('Score: ' + score,-camera.x+(screenWidth/2+40),40);
 
 	if(gameEnd){
 		ctx.font= "80px 'Indie Flower' red";
-		ctx.fillText('Game Over', 60-camera.x,150);
+		ctx.fillText('Game Over', (screenWidth/2-190)-camera.x,150);
 
 		ctx.font= "40px 'Indie Flower' red";
 		if(score==1){
-			ctx.fillText('You scored '+score+' point!',80-camera.x,230);
+			ctx.fillText('You scored '+score+' point!',(screenWidth/2-160)-camera.x,230);
 
 		}
 		else{
-			ctx.fillText('You scored '+score+' points!',80-camera.x,230);
+			ctx.fillText('You scored '+score+' points!',(screenWidth/2-190)-camera.x,230);
 		}
 
 		ctx.font= "40px 'Indie Flower' red";
-	ctx.fillText('Press "R" to play again',80-camera.x,300);
+	ctx.fillText('Press "R" to play again',(screenWidth/2-190)-camera.x,300);
 	}
 
 	ctx.restore();
 
 
 
+}
+
+resetGame = function(){
+	gameStart=true;
+        	gameEnd=false;
+        	loc=0;
+        	score=0;
+        	camera.x=0;
+        	player.x=30;
+        	player.y=100;
+        	player.yVel=-5;
+
+        	bottomObstacles=[];
+			topObstacles=[];
+
+			bottomObstacles.push( new Obstacle(8,350));
+	
+			for(var i =1 ; i<10; i++){
+				stack = Math.floor(Math.random() * 20) + 6;
+				x= Math.floor(Math.random() * 120) + 120;
+				x += bottomObstacles[i-1].x;
+
+		
+				topStack = Math.floor(Math.random() * (50-stack-13)) +3;
+
+				bottomObstacles.push( new Obstacle(stack,x,false));
+				topObstacles.push( new Obstacle(topStack,x,true));
+
+			}
+			background = [0,screenHeight];
 }
 
 
