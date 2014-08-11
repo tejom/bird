@@ -356,9 +356,9 @@ draw = function(){
 	 	background[i] -= +1;
 		//console.log('clodud' + i +' '+ smallClouds[i] );
 
-			if(background[i]+camera.x<-500){
+			if(background[i]+camera.x<-screenHeight){
 				//alert('cloud off');
-				background[i]+=1000;
+				background[i]+=screenHeight*2;
 				
 
 			}
@@ -436,7 +436,7 @@ draw = function(){
 	//ctx.fillText('camera x' + camera.x,-camera.x+50,60);
 
 	ctx.font= "40px 'Indie Flower' red";
-	ctx.fillText('Score: ' + score,-camera.x+(screenWidth/2+40),40);
+	ctx.fillText('Score: ' + score,-camera.x+(screenWidth/2+20),40);
 
 	if(gameEnd){
 		ctx.font= "80px 'Indie Flower' red";
